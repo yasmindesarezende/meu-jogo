@@ -101,6 +101,31 @@
 
     canvas { display: block; width: 100%; aspect-ratio: 1000 / 560; }
 
+    .sound-toggle {
+      position: absolute;
+      z-index: 2;
+      top: 12px;
+      right: 12px;
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 1px solid rgba(214, 228, 225, .9);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, .9);
+      color: #438ea4;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(57, 80, 74, .08);
+    }
+
+    .sound-toggle svg { width: 19px; height: 19px; }
+    .sound-toggle:focus-visible { outline: 3px solid #e4bd60; outline-offset: 2px; }
+
+    .journey { margin-top: 12px; }
+    .journey-heading { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; color: #718184; font-size: 10px; font-weight: 700; }
+    .journey-track { height: 5px; overflow: hidden; border-radius: 5px; background: #e7eeeb; }
+    .journey-fill { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #79b9c3, #d9b85f); transition: width .22s ease; }
+
     .launch-layer {
       position: absolute;
       inset: 0;
@@ -117,6 +142,9 @@
     .launch-layer[hidden] { display: none; }
 
     .launch-sparkle { width: 38px; height: 38px; color: #ddb758; }
+    .arrival-castle { display: none; width: 76px; height: 68px; }
+    .launch-layer.arrived .launch-sparkle { display: none; }
+    .launch-layer.arrived .arrival-castle { display: block; }
     .launch-layer h2 { margin: 0; font-family: Fraunces, Georgia, serif; font-size: clamp(25px, 4vw, 37px); font-weight: 500; }
     .launch-layer p { margin: 0 0 8px; color: #647678; font-size: 14px; }
 
@@ -218,7 +246,7 @@
       <div class="stats" aria-label="Placar">
         <div class="stat">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 2.8 2.72 5.51 6.08.88-4.4 4.29 1.04 6.05L12 16.68l-5.44 2.85 1.04-6.05-4.4-4.29 6.08-.88L12 2.8Z" fill="#e1b94f"/></svg>
-          <span><span class="stat-label">ESTRELAS</span><span class="stat-value" id="score">0</span></span>
+          <span><span class="stat-label">PONTOS</span><span class="stat-value" id="score">0</span></span>
         </div>
         <div class="stat">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.2s-8-4.63-8-10.19a4.18 4.18 0 0 1 7.38-2.7L12 8.1l.62-.79A4.18 4.18 0 0 1 20 10.01c0 5.56-8 10.19-8 10.19Z" fill="#e8a9a0"/></svg>
@@ -229,16 +257,38 @@
 
     <section class="game-shell" aria-label="Jogo Voo Encantado">
       <canvas id="game" aria-label="Unicórnio voando entre nuvens e estrelas"></canvas>
+      <button class="sound-toggle" id="sound-toggle" type="button" aria-label="Desativar sons" aria-pressed="true" title="Desativar sons">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 9.5a4 4 0 0 1 0 5m2.5-7.5a7.5 7.5 0 0 1 0 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
       <div class="launch-layer" id="launch-layer">
         <svg class="launch-sparkle" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 2.5c1.8 9.1 4.4 11.7 13.5 13.5C24.4 17.8 21.8 20.4 20 29.5 18.2 20.4 15.6 17.8 6.5 16 15.6 14.2 18.2 11.6 20 2.5Z" fill="currentColor"/><path d="M32.4 25.7c.9 4.3 2.1 5.6 6.4 6.4-4.3.9-5.5 2.1-6.4 6.4-.8-4.3-2.1-5.5-6.4-6.4 4.3-.8 5.6-2.1 6.4-6.4Z" fill="#91cbd0"/></svg>
+        <svg class="arrival-castle" viewBox="0 0 96 84" fill="none" aria-hidden="true">
+          <path d="M24 75V34h48v41H24Z" fill="#fffefa" stroke="#b8d2d3" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M11 75V27h23v48H11ZM62 75V27h23v48H62Z" fill="#fffefa" stroke="#b8d2d3" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="m9 28 13-21 14 21M60 28 73 7l14 21M29 35 48 17l19 18" fill="#7096a6" stroke="#5e8191" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M48 17V5m0 0 12 4-12 4" stroke="#e8c261" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M39 75V58a9 9 0 0 1 18 0v17" fill="#8fcbd0" stroke="#75aeb6" stroke-width="2"/>
+          <circle cx="52" cy="65" r="1.5" fill="#e8c261"/>
+          <rect x="16" y="43" width="8" height="11" rx="3" fill="#ffe8a8" stroke="#e5d9b5"/>
+          <rect x="72" y="43" width="8" height="11" rx="3" fill="#ffe8a8" stroke="#e5d9b5"/>
+          <rect x="39" y="39" width="7" height="10" rx="3" fill="#ffe8a8" stroke="#e5d9b5"/>
+          <rect x="50" y="39" width="7" height="10" rx="3" fill="#ffe8a8" stroke="#e5d9b5"/>
+          <path d="M10 78h76" stroke="#94bdc4" stroke-width="3" stroke-linecap="round"/>
+          <path d="m73 39 1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5 1.5-3.5Z" fill="#e8c261"/>
+        </svg>
         <h2 id="launch-title">Vamos voar?</h2>
-        <p id="launch-copy">Um céu inteiro esperando por você.</p>
+        <p id="launch-copy">Escape da tempestade e alcance o castelo!</p>
         <button class="launch-button" id="launch-button" type="button">
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 4.8c0-.8.9-1.3 1.6-.9l7 5.1a1.2 1.2 0 0 1 0 2l-7 5.1c-.7.5-1.6 0-1.6-.9V4.8Z" fill="currentColor"/></svg>
           Começar a voar
         </button>
       </div>
     </section>
+
+    <div class="journey">
+      <div class="journey-heading"><span>CAMINHO ATÉ O CASTELO</span><span id="journey-count">0 / 8</span></div>
+      <div class="journey-track" id="journey-track" role="progressbar" aria-label="Progresso até o território seguro" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0"><span class="journey-fill" id="journey-fill"></span></div>
+    </div>
 
     <div class="controls">
       <p class="hint">Pressione <kbd>ESPAÇO</kbd> ou <kbd>↑</kbd> para bater as asas</p>
@@ -265,14 +315,20 @@
       const launchCopy = document.querySelector("#launch-copy");
       const scoreLabel = document.querySelector("#score");
       const bestLabel = document.querySelector("#best");
+      const journeyCount = document.querySelector("#journey-count");
+      const journeyTrack = document.querySelector("#journey-track");
+      const journeyFill = document.querySelector("#journey-fill");
       const unicornArt = document.querySelector("#unicorn-art");
       const flightButton = document.querySelector("#flight-button");
+      const soundToggle = document.querySelector("#sound-toggle");
       const width = 1000;
       const height = 560;
       const floor = 503;
+      const gatesToTerritory = 8;
       const bestKey = "voo-encantado-recorde";
       let best = Number(localStorage.getItem(bestKey)) || 0;
       let score = 0;
+      let gatesPassed = 0;
       let state = "ready";
       let playerY = 264;
       let velocity = 0;
@@ -285,8 +341,33 @@
       let floatingClouds = [];
       let raf = 0;
       let soundContext;
+      let rainSource;
+      let rainGain;
+      let soundEnabled = true;
+      let lastNeighAt = -1;
+      let wingSoundTimer = 0;
+      let dialogueIndex = -1;
+      let dialogueUntil = 0;
+      let nextDialogueAt = Infinity;
+      let lightningTimer = 0;
+      let lightningFlash = 0;
+      const dialogueLines = [
+        { speaker: "mother", text: "Vamos, família!" },
+        { speaker: "father", text: "Estou com você!" },
+        { speaker: "grandmother", text: "Que chuva bonita!" },
+        { speaker: "grandfather", text: "Rumo ao castelo!" },
+        { speaker: "mother", text: "Olha uma estrela!" },
+        { speaker: "father", text: "Juntos até o fim!" },
+      ];
 
       bestLabel.textContent = String(best);
+
+      const updateJourney = () => {
+        const progress = gatesPassed / gatesToTerritory;
+        journeyCount.textContent = `${gatesPassed} / ${gatesToTerritory}`;
+        journeyTrack.setAttribute("aria-valuenow", String(gatesPassed));
+        journeyFill.style.width = `${progress * 100}%`;
+      };
 
       const seededClouds = [
         { x: 83, y: 107, scale: .66, speed: 13, alpha: .66 },
@@ -295,7 +376,20 @@
         { x: 1004, y: 231, scale: .48, speed: 11, alpha: .38 },
         { x: 244, y: 374, scale: .58, speed: 7, alpha: .48 },
         { x: 836, y: 414, scale: .72, speed: 12, alpha: .41 },
+        { x: 182, y: 254, scale: .34, speed: 9, alpha: .38 },
+        { x: 566, y: 316, scale: .5, speed: 11, alpha: .36 },
+        { x: 1090, y: 347, scale: .4, speed: 10, alpha: .4 },
+        { x: 28, y: 205, scale: .31, speed: 7, alpha: .42 },
+        { x: 496, y: 75, scale: .38, speed: 8, alpha: .38 },
+        { x: 922, y: 292, scale: .46, speed: 9, alpha: .34 },
       ];
+      const rainDrops = Array.from({ length: 128 }, (_, index) => ({
+        x: (index * 179 + 53) % width,
+        y: (index * 97 + 31) % height,
+        length: 10 + index % 8,
+        speed: 230 + (index * 19) % 110,
+        opacity: .22 + (index % 4) * .05,
+      }));
 
       const resize = () => {
         const box = canvas.getBoundingClientRect();
@@ -379,6 +473,47 @@
         }
       };
 
+      const drawRain = () => {
+        const stormIntensity = gatesPassed / gatesToTerritory;
+        context.save();
+        context.lineWidth = 1.7 + stormIntensity * .6;
+        context.lineCap = "round";
+        for (const drop of rainDrops) {
+          const x = (drop.x - elapsed * (36 + stormIntensity * 60) + width) % width;
+          const y = (drop.y + elapsed * (drop.speed + stormIntensity * 85)) % height;
+          context.strokeStyle = `rgba(62,111,145,${Math.min(.78, drop.opacity + stormIntensity * .16)})`;
+          context.beginPath();
+          context.moveTo(x, y);
+          context.lineTo(x - 4 - stormIntensity * 7, y + drop.length + stormIntensity * 5);
+          context.stroke();
+        }
+        context.restore();
+      };
+
+      const drawStorm = () => {
+        const intensity = gatesPassed / gatesToTerritory;
+        if (intensity === 0) return;
+        const stormX = -105 + intensity * 340;
+        cloud(stormX, 39, 2.35, "#596f82", .27 + intensity * .35);
+        cloud(stormX + 212, 22, 1.85, "#657c8e", .22 + intensity * .29);
+        if (lightningFlash > 0) {
+          context.save();
+          context.globalAlpha = Math.min(1, lightningFlash * 6);
+          context.strokeStyle = "#fff0b0";
+          context.lineWidth = 5;
+          context.lineJoin = "round";
+          context.shadowColor = "#fff0b0";
+          context.shadowBlur = 12;
+          context.beginPath();
+          context.moveTo(stormX + 100, 57);
+          context.lineTo(stormX + 88, 82);
+          context.lineTo(stormX + 101, 82);
+          context.lineTo(stormX + 84, 111);
+          context.stroke();
+          context.restore();
+        }
+      };
+
       const drawSparkle = (item) => {
         const pulse = .65 + Math.sin(elapsed * 2 + item.phase) * .28;
         context.save();
@@ -388,14 +523,14 @@
       };
 
       const drawObstacle = (item) => {
-        const cloudColor = "#dceef0";
+        const cloudColor = "#7096a6";
         cloud(item.x, item.gapTop - 20, 1.05, cloudColor);
         cloud(item.x, item.gapBottom + 22, 1.05, cloudColor);
-        context.fillStyle = "rgba(216,235,235,.68)";
+        context.fillStyle = "rgba(82,125,147,.82)";
         context.fillRect(item.x - 37, 0, 74, Math.max(0, item.gapTop - 33));
         context.fillRect(item.x - 37, item.gapBottom + 34, 74, floor - item.gapBottom);
-        cloud(item.x - 12, item.gapTop - 17, .78, "#dceef0");
-        cloud(item.x + 13, item.gapBottom + 18, .82, "#dceef0");
+        cloud(item.x - 12, item.gapTop - 17, .78, cloudColor);
+        cloud(item.x + 13, item.gapBottom + 18, .82, cloudColor);
       };
 
       const drawGround = () => {
@@ -412,7 +547,7 @@
         context.fill();
         for (let i = 0; i < 20; i++) {
           const x = (i * 57 + 13) % width;
-          const y = 537 + (i % 2) * 8;
+          const y = 507 + (i % 2) * 4;
           context.strokeStyle = i % 2 ? "#b4d6b6" : "#c7deb9";
           context.lineWidth = 2;
           context.beginPath();
@@ -422,6 +557,100 @@
           context.quadraticCurveTo(x + 4, y, x + 6, y - 2);
           context.stroke();
         }
+
+        const sea = context.createLinearGradient(0, 504, 0, height);
+        sea.addColorStop(0, "#8fd0d1");
+        sea.addColorStop(1, "#5baabd");
+        context.fillStyle = sea;
+        context.beginPath();
+        context.moveTo(0, 511 + Math.sin(elapsed * 1.8) * 3);
+        for (let x = 0; x < width; x += 100) {
+          const middle = x + 50;
+          const next = x + 100;
+          const crest = Math.sin(elapsed * 1.8 + x * .025) * 3;
+          const trough = Math.sin(elapsed * 1.8 + x * .025 + Math.PI) * 3;
+          context.quadraticCurveTo(middle, 508 + crest, next, 511 + trough);
+        }
+        context.lineTo(width, height);
+        context.lineTo(0, height);
+        context.closePath();
+        context.fill();
+
+        context.save();
+        context.lineCap = "round";
+        for (let i = 0; i < 9; i++) {
+          const x = (i * 137 + elapsed * (18 + (i % 3) * 5)) % (width + 80) - 40;
+          const y = 520 + (i % 3) * 8 + Math.sin(elapsed * 2.2 + i) * 1.5;
+          context.strokeStyle = `rgba(255,255,255,${.38 + (i % 3) * .12})`;
+          context.lineWidth = 1.5 + (i % 2) * .5;
+          context.beginPath();
+          context.moveTo(x, y);
+          context.quadraticCurveTo(x + 12, y - 3, x + 25, y);
+          context.stroke();
+        }
+        context.restore();
+      };
+
+      const drawTerritory = () => {
+        const progress = gatesPassed / gatesToTerritory;
+        const x = 800 - progress * 590;
+        const baseY = 467;
+        const scale = .72 + progress * .28;
+        context.save();
+        context.translate(x, baseY);
+        context.scale(scale, scale);
+        context.fillStyle = "#fffefa";
+        context.strokeStyle = "#b8d2d3";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.rect(-28, -61, 56, 61);
+        context.rect(-48, -76, 20, 76);
+        context.rect(28, -76, 20, 76);
+        context.fill();
+        context.stroke();
+        context.fillStyle = "#7096a6";
+        context.beginPath();
+        context.moveTo(-50, -76);
+        context.lineTo(-38, -98);
+        context.lineTo(-26, -76);
+        context.moveTo(26, -76);
+        context.lineTo(38, -98);
+        context.lineTo(50, -76);
+        context.moveTo(-34, -61);
+        context.lineTo(0, -94);
+        context.lineTo(34, -61);
+        context.closePath();
+        context.fill();
+        context.strokeStyle = "#5e8191";
+        context.stroke();
+        context.fillStyle = "#ffe8a8";
+        context.beginPath();
+        context.rect(-43, -57, 9, 12);
+        context.rect(34, -57, 9, 12);
+        context.rect(-15, -48, 8, 11);
+        context.rect(7, -48, 8, 11);
+        context.fill();
+        context.fillStyle = "#8fcbd0";
+        context.beginPath();
+        context.moveTo(-9, 0);
+        context.lineTo(-9, -24);
+        context.arc(0, -24, 9, Math.PI, 0);
+        context.lineTo(9, 0);
+        context.closePath();
+        context.fill();
+        context.strokeStyle = "#e8c261";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(0, -90);
+        context.lineTo(0, -110);
+        context.lineTo(15, -105);
+        context.lineTo(0, -100);
+        context.stroke();
+        context.fillStyle = "#e8c261";
+        context.beginPath();
+        context.arc(5, -12, 1.5, 0, Math.PI * 2);
+        context.fill();
+        context.restore();
       };
 
       const drawPlayer = () => {
@@ -450,8 +679,403 @@
         context.restore();
       };
 
+      const drawCompanion = () => {
+        const bob = Math.sin(elapsed * 4.2) * 6;
+        const wingBeat = Math.sin(elapsed * 13) * .25;
+        context.save();
+        context.translate(96, playerY + 28 + bob);
+        context.rotate(Math.max(-.12, Math.min(.12, velocity / 2800)));
+        context.strokeStyle = "#9accc9";
+        context.lineWidth = 3;
+        context.lineCap = "round";
+        context.beginPath();
+        context.moveTo(-13, 3);
+        context.quadraticCurveTo(-25, 9, -28, 2);
+        context.stroke();
+
+        context.save();
+        context.translate(-3, -8);
+        context.rotate(wingBeat);
+        context.fillStyle = "#bfe7e4";
+        context.strokeStyle = "#91c7c7";
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.moveTo(0, 4);
+        context.quadraticCurveTo(-14, -18, -20, -7);
+        context.quadraticCurveTo(-21, 0, -10, 6);
+        context.closePath();
+        context.fill();
+        context.stroke();
+        context.restore();
+
+        context.fillStyle = "#f4fbf6";
+        context.strokeStyle = "#c9e0d9";
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.ellipse(0, 2, 17, 12, -.1, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+        context.beginPath();
+        context.arc(11, -7, 10, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+
+        context.fillStyle = "#a8d8d3";
+        context.beginPath();
+        context.moveTo(5, -13);
+        context.lineTo(3, -21);
+        context.lineTo(11, -16);
+        context.moveTo(14, -15);
+        context.lineTo(20, -21);
+        context.lineTo(20, -12);
+        context.fill();
+        context.fillStyle = "#dfb95e";
+        context.beginPath();
+        context.moveTo(9, -16);
+        context.lineTo(13, -27);
+        context.lineTo(16, -15);
+        context.closePath();
+        context.fill();
+
+        context.fillStyle = "#526f70";
+        context.beginPath();
+        context.arc(15, -8, 1.5, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = "#e8b8c2";
+        context.beginPath();
+        context.ellipse(18, -3, 3, 2, 0, 0, Math.PI * 2);
+        context.fill();
+        context.strokeStyle = "#91c7c7";
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.moveTo(0, -3);
+        context.lineTo(0, 6);
+        context.stroke();
+        context.restore();
+      };
+
+      const drawPartner = () => {
+        const bob = Math.sin(elapsed * 2.8 + 1.2) * 5;
+        const wingBeat = Math.sin(elapsed * 10 + .7) * .18;
+        context.save();
+        context.translate(296, playerY - 31 + bob);
+        context.rotate(Math.max(-.12, Math.min(.12, velocity / 3000)));
+
+        context.strokeStyle = "#607fae";
+        context.lineWidth = 6;
+        context.lineCap = "round";
+        context.beginPath();
+        context.moveTo(-27, 5);
+        context.bezierCurveTo(-46, 0, -48, -15, -58, -13);
+        context.moveTo(-36, 2);
+        context.quadraticCurveTo(-48, 12, -55, 8);
+        context.stroke();
+
+        context.save();
+        context.translate(-9, -12);
+        context.rotate(wingBeat);
+        context.fillStyle = "#d5e5f0";
+        context.strokeStyle = "#aec7d9";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(0, 13);
+        context.quadraticCurveTo(-6, -8, -20, -19);
+        context.quadraticCurveTo(0, -18, 9, -7);
+        context.quadraticCurveTo(21, -12, 25, -5);
+        context.quadraticCurveTo(17, 6, 0, 13);
+        context.closePath();
+        context.fill();
+        context.stroke();
+        context.restore();
+
+        context.fillStyle = "#fffefa";
+        context.strokeStyle = "#d4e4e1";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.ellipse(-1, 7, 37, 20, -.06, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+
+        context.beginPath();
+        context.moveTo(10, 13);
+        context.quadraticCurveTo(18, -10, 28, -23);
+        context.quadraticCurveTo(37, -30, 48, -23);
+        context.lineTo(43, -2);
+        context.quadraticCurveTo(30, 7, 22, 19);
+        context.closePath();
+        context.fill();
+        context.stroke();
+
+        context.fillStyle = "#eef5f2";
+        context.beginPath();
+        context.ellipse(46, -14, 17, 13, .16, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+        context.beginPath();
+        context.moveTo(36, -22);
+        context.lineTo(35, -33);
+        context.lineTo(44, -25);
+        context.lineTo(53, -31);
+        context.lineTo(51, -19);
+        context.fill();
+        context.stroke();
+
+        context.fillStyle = "#5578a9";
+        context.beginPath();
+        context.moveTo(22, -22);
+        context.quadraticCurveTo(7, -43, -14, -32);
+        context.quadraticCurveTo(-7, -27, -3, -18);
+        context.quadraticCurveTo(5, -22, 12, -14);
+        context.quadraticCurveTo(21, -7, 28, -8);
+        context.quadraticCurveTo(18, -16, 22, -22);
+        context.fill();
+        context.fillStyle = "#8ba8d0";
+        context.beginPath();
+        context.moveTo(15, -23);
+        context.quadraticCurveTo(5, -36, -7, -32);
+        context.quadraticCurveTo(3, -29, 8, -20);
+        context.fill();
+
+        context.fillStyle = "#e8c261";
+        context.beginPath();
+        context.moveTo(47, -25);
+        context.lineTo(55, -49);
+        context.lineTo(57, -24);
+        context.closePath();
+        context.fill();
+        context.strokeStyle = "#cfaa51";
+        context.lineWidth = 1.5;
+        context.stroke();
+
+        context.strokeStyle = "#405d82";
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.moveTo(40, -19);
+        context.lineTo(45, -20);
+        context.stroke();
+        context.fillStyle = "#405d82";
+        context.beginPath();
+        context.arc(49, -14, 1.8, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = "#d9969e";
+        context.beginPath();
+        context.ellipse(57, -9, 3, 2, 0, 0, Math.PI * 2);
+        context.fill();
+
+        context.strokeStyle = "#d2e2df";
+        context.lineWidth = 5;
+        context.lineCap = "round";
+        context.beginPath();
+        context.moveTo(-15, 19);
+        context.lineTo(-18, 28);
+        context.moveTo(3, 24);
+        context.lineTo(1, 32);
+        context.moveTo(24, 15);
+        context.lineTo(26, 24);
+        context.stroke();
+        context.strokeStyle = "#6885ad";
+        context.lineWidth = 4;
+        context.beginPath();
+        context.moveTo(-19, 29);
+        context.lineTo(-15, 29);
+        context.moveTo(0, 33);
+        context.lineTo(4, 33);
+        context.moveTo(24, 25);
+        context.lineTo(28, 25);
+        context.stroke();
+        context.restore();
+      };
+
+      const drawElderUnicorn = (x, y, maneColor, isGrandmother) => {
+        const bob = Math.sin(elapsed * 2.6 + x) * 4;
+        const wingBeat = Math.sin(elapsed * 9 + x) * .14;
+        context.save();
+        context.translate(x, y + bob);
+        context.scale(.62, .62);
+
+        context.strokeStyle = maneColor;
+        context.lineWidth = 5;
+        context.lineCap = "round";
+        context.beginPath();
+        context.moveTo(-24, 5);
+        context.quadraticCurveTo(-40, -2, -45, -13);
+        context.stroke();
+
+        context.save();
+        context.translate(-5, -10);
+        context.rotate(wingBeat);
+        context.fillStyle = "#dcebef";
+        context.strokeStyle = "#b9d0d2";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(0, 10);
+        context.quadraticCurveTo(-8, -13, -24, -17);
+        context.quadraticCurveTo(-17, -3, 0, 10);
+        context.closePath();
+        context.fill();
+        context.stroke();
+        context.restore();
+
+        context.fillStyle = "#fffefa";
+        context.strokeStyle = "#d6e3df";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.ellipse(-3, 6, 31, 17, -.06, 0, Math.PI * 2);
+        context.fill();
+        context.stroke();
+
+        context.strokeStyle = "#d6e3df";
+        context.lineWidth = 5;
+        context.lineCap = "round";
+        context.beginPath();
+        context.moveTo(-18, 18);
+        context.lineTo(-19, 27);
+        context.moveTo(2, 21);
+        context.lineTo(1, 29);
+        context.moveTo(18, 14);
+        context.lineTo(20, 23);
+        context.stroke();
+        context.strokeStyle = maneColor;
+        context.lineWidth = 4;
+        context.beginPath();
+        context.moveTo(-21, 28);
+        context.lineTo(-17, 28);
+        context.moveTo(-1, 30);
+        context.lineTo(3, 30);
+        context.moveTo(18, 24);
+        context.lineTo(22, 24);
+        context.stroke();
+
+        context.fillStyle = "#f7f8f2";
+        context.beginPath();
+        context.ellipse(31, -10, 18, 14, .14, 0, Math.PI * 2);
+        context.fill();
+        context.strokeStyle = "#d6e3df";
+        context.lineWidth = 2;
+        context.stroke();
+        context.beginPath();
+        context.moveTo(23, -19);
+        context.lineTo(21, -30);
+        context.lineTo(31, -22);
+        context.lineTo(40, -30);
+        context.lineTo(39, -17);
+        context.fill();
+        context.stroke();
+
+        context.fillStyle = maneColor;
+        context.beginPath();
+        context.ellipse(11, -24, 17, 10, -.18, 0, Math.PI * 2);
+        context.ellipse(24, -28, 10, 9, .1, 0, Math.PI * 2);
+        context.ellipse(2, -30, 9, 8, -.2, 0, Math.PI * 2);
+        context.fill();
+        context.beginPath();
+        context.moveTo(9, -26);
+        context.quadraticCurveTo(17, -40, 28, -33);
+        context.quadraticCurveTo(23, -26, 17, -20);
+        context.fill();
+
+        context.fillStyle = "#e8c261";
+        context.beginPath();
+        context.moveTo(31, -23);
+        context.lineTo(38, -43);
+        context.lineTo(40, -22);
+        context.closePath();
+        context.fill();
+
+        context.fillStyle = "#657177";
+        context.beginPath();
+        context.arc(36, -12, 1.7, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = "#e3b7b5";
+        context.beginPath();
+        context.ellipse(45, -5, 3, 2, 0, 0, Math.PI * 2);
+        context.fill();
+
+        if (isGrandmother) {
+          context.strokeStyle = "#8999a1";
+          context.lineWidth = 1.5;
+          context.beginPath();
+          context.arc(35, -12, 5, 0, Math.PI * 2);
+          context.stroke();
+          context.fillStyle = "#e9aeb5";
+          for (let petal = 0; petal < 5; petal++) {
+            const angle = petal * Math.PI * 2 / 5;
+            context.beginPath();
+            context.arc(13 + Math.cos(angle) * 5, -36 + Math.sin(angle) * 5, 3, 0, Math.PI * 2);
+            context.fill();
+          }
+          context.fillStyle = "#e8c261";
+          context.beginPath();
+          context.arc(13, -36, 2, 0, Math.PI * 2);
+          context.fill();
+        } else {
+          context.strokeStyle = "#b7bdc2";
+          context.lineWidth = 3;
+          context.lineCap = "round";
+          context.beginPath();
+          context.moveTo(34, -4);
+          context.quadraticCurveTo(40, 1, 46, -4);
+          context.moveTo(38, -1);
+          context.quadraticCurveTo(40, 8, 35, 11);
+          context.moveTo(40, -1);
+          context.quadraticCurveTo(43, 7, 48, 8);
+          context.stroke();
+        }
+        context.restore();
+      };
+
+      const drawGrandparents = () => {
+        drawElderUnicorn(386, playerY - 37, "#9caeb9", false);
+        drawElderUnicorn(444, playerY + 5, "#a99cba", true);
+      };
+
+      const drawSpeechBubble = () => {
+        if (state !== "running" || dialogueIndex < 0 || elapsed > dialogueUntil) return;
+        const line = dialogueLines[dialogueIndex];
+        const speakers = {
+          mother: { x: 186, y: playerY - 16 },
+          father: { x: 296, y: playerY - 45 + Math.sin(elapsed * 2.8 + 1.2) * 5 },
+          grandfather: { x: 386, y: playerY - 50 + Math.sin(elapsed * 2.6 + 386) * 4 },
+          grandmother: { x: 444, y: playerY - 8 + Math.sin(elapsed * 2.6 + 444) * 4 },
+        };
+        const speaker = speakers[line.speaker];
+        const bubbleWidth = 176;
+        const bubbleHeight = 38;
+        const bubbleX = Math.max(10, Math.min(width - bubbleWidth - 10, speaker.x - bubbleWidth / 2));
+        const bubbleY = Math.max(10, speaker.y - 79);
+
+        context.save();
+        context.fillStyle = "rgba(255,255,255,.96)";
+        context.strokeStyle = "#c5dddc";
+        context.lineWidth = 1.5;
+        context.beginPath();
+        context.roundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 12);
+        context.fill();
+        context.stroke();
+        context.beginPath();
+        context.moveTo(speaker.x - 7, bubbleY + bubbleHeight - 1);
+        context.lineTo(speaker.x, bubbleY + bubbleHeight + 8);
+        context.lineTo(speaker.x + 5, bubbleY + bubbleHeight - 1);
+        context.closePath();
+        context.fill();
+        context.strokeStyle = "#c5dddc";
+        context.beginPath();
+        context.moveTo(speaker.x - 6, bubbleY + bubbleHeight);
+        context.lineTo(speaker.x, bubbleY + bubbleHeight + 8);
+        context.lineTo(speaker.x + 4, bubbleY + bubbleHeight);
+        context.stroke();
+        context.fillStyle = "#405e61";
+        context.font = '600 14px "DM Sans", sans-serif';
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(line.text, bubbleX + bubbleWidth / 2, bubbleY + bubbleHeight / 2, bubbleWidth - 16);
+        context.restore();
+      };
+
       const render = () => {
         background();
+        drawStorm();
+        drawRain();
         for (const item of floatingClouds) cloud(item.x, item.y, item.scale, "#fff", item.alpha);
         for (const item of sparkles) drawSparkle(item);
         for (const item of clouds) drawObstacle(item);
@@ -465,10 +1089,108 @@
           context.restore();
         }
         drawGround();
+        drawTerritory();
+        drawGrandparents();
+        drawPartner();
+        drawCompanion();
         drawPlayer();
+        drawSpeechBubble();
+      };
+
+      const makeNoiseBuffer = (duration) => {
+        const sampleRate = soundContext.sampleRate;
+        const buffer = soundContext.createBuffer(1, Math.floor(sampleRate * duration), sampleRate);
+        const samples = buffer.getChannelData(0);
+        for (let sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {
+          samples[sampleIndex] = Math.random() * 2 - 1;
+        }
+        return buffer;
+      };
+
+      const startRain = () => {
+        if (!soundEnabled || rainSource) return;
+        try {
+          soundContext ||= new AudioContext();
+          if (soundContext.state === "suspended") soundContext.resume();
+          const source = soundContext.createBufferSource();
+          const filter = soundContext.createBiquadFilter();
+          const highPass = soundContext.createBiquadFilter();
+          const gain = soundContext.createGain();
+          source.buffer = makeNoiseBuffer(2);
+          source.loop = true;
+          highPass.type = "highpass";
+          highPass.frequency.value = 280;
+          filter.type = "lowpass";
+          filter.frequency.value = 1500;
+          gain.gain.setValueAtTime(.001, soundContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.075, soundContext.currentTime + .8);
+          source.connect(highPass).connect(filter).connect(gain).connect(soundContext.destination);
+          source.start();
+          rainSource = source;
+          rainGain = gain;
+        } catch (_) { /* Audio is optional; flight works without it. */ }
+      };
+
+      const stopRain = () => {
+        if (!soundContext || !rainSource) return;
+        const now = soundContext.currentTime;
+        const source = rainSource;
+        rainSource = null;
+        if (rainGain) {
+          rainGain.gain.cancelScheduledValues(now);
+          rainGain.gain.setTargetAtTime(.001, now, .08);
+          source.stop(now + .35);
+        } else {
+          source.stop();
+        }
+        rainGain = null;
+      };
+
+      const playThunder = () => {
+        if (!soundEnabled || !soundContext) return;
+        try {
+          const now = soundContext.currentTime;
+          const source = soundContext.createBufferSource();
+          const filter = soundContext.createBiquadFilter();
+          const gain = soundContext.createGain();
+          source.buffer = makeNoiseBuffer(2.6);
+          filter.type = "lowpass";
+          filter.frequency.setValueAtTime(190, now);
+          filter.frequency.exponentialRampToValueAtTime(65, now + 2.4);
+          gain.gain.setValueAtTime(.001, now);
+          gain.gain.setValueAtTime(.001, now + .12);
+          gain.gain.linearRampToValueAtTime(.32, now + .3);
+          gain.gain.exponentialRampToValueAtTime(.001, now + 2.5);
+          source.connect(filter).connect(gain).connect(soundContext.destination);
+          source.start(now + .12);
+          source.stop(now + 2.6);
+
+          const rumble = soundContext.createOscillator();
+          const rumbleGain = soundContext.createGain();
+          rumble.type = "sine";
+          rumble.frequency.setValueAtTime(58, now + .12);
+          rumble.frequency.exponentialRampToValueAtTime(34, now + 2.1);
+          rumbleGain.gain.setValueAtTime(.001, now);
+          rumbleGain.gain.linearRampToValueAtTime(.18, now + .35);
+          rumbleGain.gain.exponentialRampToValueAtTime(.001, now + 2.2);
+          rumble.connect(rumbleGain).connect(soundContext.destination);
+          rumble.start(now + .12);
+          rumble.stop(now + 2.3);
+        } catch (_) { /* Audio is optional; flight works without it. */ }
+      };
+
+      const updateSoundToggle = () => {
+        const label = soundEnabled ? "Desativar sons" : "Ativar sons";
+        soundToggle.setAttribute("aria-label", label);
+        soundToggle.setAttribute("title", label);
+        soundToggle.setAttribute("aria-pressed", String(soundEnabled));
+        soundToggle.innerHTML = soundEnabled
+          ? '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 9.5a4 4 0 0 1 0 5m2.5-7.5a7.5 7.5 0 0 1 0 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+          : '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m17 9 5 6m0-6-5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
       };
 
       const playChime = () => {
+        if (!soundEnabled) return;
         try {
           soundContext ||= new AudioContext();
           if (soundContext.state === "suspended") soundContext.resume();
@@ -485,12 +1207,93 @@
         } catch (_) { /* Audio is optional; flight works without it. */ }
       };
 
+      const playNeigh = () => {
+        if (!soundEnabled) return;
+        try {
+          soundContext ||= new AudioContext();
+          if (soundContext.state === "suspended") soundContext.resume();
+          const now = soundContext.currentTime;
+          if (now - lastNeighAt < .35) return;
+          lastNeighAt = now;
+          const oscillator = soundContext.createOscillator();
+          const filter = soundContext.createBiquadFilter();
+          const gain = soundContext.createGain();
+          oscillator.type = "triangle";
+          oscillator.frequency.setValueAtTime(470, now);
+          oscillator.frequency.exponentialRampToValueAtTime(860, now + .09);
+          oscillator.frequency.exponentialRampToValueAtTime(430, now + .34);
+          filter.type = "lowpass";
+          filter.frequency.value = 1500;
+          gain.gain.setValueAtTime(.001, now);
+          gain.gain.linearRampToValueAtTime(.1, now + .025);
+          gain.gain.exponentialRampToValueAtTime(.001, now + .35);
+          oscillator.connect(filter).connect(gain).connect(soundContext.destination);
+          oscillator.start(now);
+          oscillator.stop(now + .36);
+        } catch (_) { /* Audio is optional; flight works without it. */ }
+      };
+
+      const playWingFlap = () => {
+        if (!soundEnabled || !soundContext) return;
+        try {
+          const now = soundContext.currentTime;
+          const source = soundContext.createBufferSource();
+          const filter = soundContext.createBiquadFilter();
+          const gain = soundContext.createGain();
+          source.buffer = makeNoiseBuffer(.42);
+          filter.type = "lowpass";
+          filter.frequency.setValueAtTime(900, now);
+          filter.frequency.exponentialRampToValueAtTime(260, now + .38);
+          gain.gain.setValueAtTime(.001, now);
+          gain.gain.linearRampToValueAtTime(.09, now + .06);
+          gain.gain.exponentialRampToValueAtTime(.001, now + .4);
+          source.connect(filter).connect(gain).connect(soundContext.destination);
+          source.start(now);
+          source.stop(now + .42);
+
+          const thump = soundContext.createOscillator();
+          const thumpGain = soundContext.createGain();
+          thump.type = "sine";
+          thump.frequency.setValueAtTime(78, now);
+          thump.frequency.exponentialRampToValueAtTime(43, now + .24);
+          thumpGain.gain.setValueAtTime(.055, now);
+          thumpGain.gain.exponentialRampToValueAtTime(.001, now + .28);
+          thump.connect(thumpGain).connect(soundContext.destination);
+          thump.start(now);
+          thump.stop(now + .3);
+
+          const airTone = soundContext.createOscillator();
+          const airFilter = soundContext.createBiquadFilter();
+          const airGain = soundContext.createGain();
+          airTone.type = "triangle";
+          airTone.frequency.setValueAtTime(190, now);
+          airTone.frequency.exponentialRampToValueAtTime(360, now + .12);
+          airTone.frequency.exponentialRampToValueAtTime(150, now + .36);
+          airFilter.type = "lowpass";
+          airFilter.frequency.value = 760;
+          airGain.gain.setValueAtTime(.001, now);
+          airGain.gain.linearRampToValueAtTime(.025, now + .07);
+          airGain.gain.exponentialRampToValueAtTime(.001, now + .37);
+          airTone.connect(airFilter).connect(airGain).connect(soundContext.destination);
+          airTone.start(now);
+          airTone.stop(now + .39);
+        } catch (_) { /* Audio is optional; flight works without it. */ }
+      };
+
       const start = () => {
         if (state === "running") return;
         cancelAnimationFrame(raf);
         state = "running";
         score = 0;
+        gatesPassed = 0;
+        updateJourney();
+        lightningTimer = 0;
+        lightningFlash = 0;
+        wingSoundTimer = 0;
         elapsed = 0;
+        dialogueIndex = 0;
+        dialogueUntil = 2.4;
+        nextDialogueAt = 5.5;
         spawnTimer = .45;
         playerY = 264;
         velocity = -150;
@@ -498,6 +1301,7 @@
         stars = [];
         scoreLabel.textContent = "0";
         launchLayer.hidden = true;
+        startRain();
         lastTime = performance.now();
         raf = requestAnimationFrame(frame);
       };
@@ -508,6 +1312,7 @@
           return;
         }
         velocity = -410;
+        playNeigh();
       };
 
       const addCloud = () => {
@@ -515,7 +1320,7 @@
         const gapTop = 106 + Math.random() * 176;
         const gapBottom = gapTop + gapSize;
         const x = width + 75;
-        clouds.push({ x, gapTop, gapBottom });
+        clouds.push({ x, gapTop, gapBottom, passed: false });
         stars.push({ x, y: (gapTop + gapBottom) / 2, collected: false });
       };
 
@@ -525,15 +1330,24 @@
         return (cx - nearestX) ** 2 + (cy - nearestY) ** 2 < radius ** 2;
       };
 
-      const finish = () => {
+      const addPoint = () => {
+        score++;
+        scoreLabel.textContent = String(score);
+      };
+
+      const finish = (reachedTerritory = false) => {
         state = "over";
+        stopRain();
         if (score > best) {
           best = score;
           localStorage.setItem(bestKey, String(best));
           bestLabel.textContent = String(best);
         }
-        launchTitle.textContent = score === best && score > 0 ? "Que voo lindo!" : "Até a próxima!";
-        launchCopy.textContent = `Você encontrou ${score} ${score === 1 ? "estrela" : "estrelas"}.`;
+        launchTitle.textContent = reachedTerritory ? "Castelo alcançado!" : "Até a próxima!";
+        launchCopy.textContent = reachedTerritory
+          ? `Você chegou ao castelo com ${score} ${score === 1 ? "ponto" : "pontos"}.`
+          : `Você fez ${score} ${score === 1 ? "ponto" : "pontos"}.`;
+        launchLayer.classList.toggle("arrived", reachedTerritory);
         launchButton.innerHTML = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.8a6.2 6.2 0 1 1-5.84 4.12M4.16 3.8v4.4h4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Voar novamente';
         launchLayer.hidden = false;
         render();
@@ -544,9 +1358,29 @@
         const delta = Math.min((now - lastTime) / 1000, .035);
         lastTime = now;
         elapsed += delta;
+        if (elapsed >= nextDialogueAt) {
+          dialogueIndex = (dialogueIndex + 1) % dialogueLines.length;
+          dialogueUntil = elapsed + 2.3;
+          nextDialogueAt = elapsed + 5.5 + Math.random() * 1.8;
+        }
+        wingSoundTimer += delta;
+        if (wingSoundTimer >= .58) {
+          wingSoundTimer -= .58;
+          playWingFlap();
+        }
         velocity += 940 * delta;
         playerY += velocity * delta;
         spawnTimer -= delta;
+
+        if (gatesPassed >= 2) {
+          lightningTimer += delta;
+          lightningFlash = Math.max(0, lightningFlash - delta);
+          if (lightningTimer > 2.8) {
+            lightningTimer = 0;
+            lightningFlash = .24;
+            playThunder();
+          }
+        }
 
         if (spawnTimer <= 0) {
           addCloud();
@@ -554,8 +1388,22 @@
         }
 
         const speed = 226;
+        for (const item of floatingClouds) {
+          item.x -= item.speed * delta;
+          if (item.x < -100) item.x = width + 100;
+        }
         for (const item of clouds) {
           item.x -= speed * delta;
+          if (!item.passed && item.x < 123) {
+            item.passed = true;
+            gatesPassed++;
+            updateJourney();
+            addPoint();
+            if (gatesPassed >= gatesToTerritory) {
+              finish(true);
+              return;
+            }
+          }
         }
         clouds = clouds.filter((item) => item.x > -100);
 
@@ -576,8 +1424,7 @@
         for (const item of stars) {
           if (!item.collected && Math.hypot(186 - item.x, playerY - item.y) < 34) {
             item.collected = true;
-            score++;
-            scoreLabel.textContent = String(score);
+            addPoint();
             playChime();
           }
         }
@@ -606,6 +1453,12 @@
       };
 
       launchButton.addEventListener("click", start);
+      soundToggle.addEventListener("click", () => {
+        soundEnabled = !soundEnabled;
+        updateSoundToggle();
+        if (soundEnabled && state === "running") startRain();
+        else stopRain();
+      });
       flightButton.addEventListener("pointerdown", (event) => {
         event.preventDefault();
         flap();
