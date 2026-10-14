@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fffefa">
+  <title>Voo Encantado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #29383a;
+      --muted: #879293;
+      --blue: #78bdd0;
+      --blue-dark: #438ea4;
+      --sun: #f1c766;
+      --line: #e8eeea;
+      --white: #fffefa;
+      font-family: "DM Sans", sans-serif;
+      color: var(--ink);
+      background: var(--white);
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    } b
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        radial-gradient(ellipse at 8% 12%, rgba(235, 246, 239, .65), transparent 32%),
+        radial-gradient(ellipse at 92% 88%, rgba(255, 241, 210, .55), transparent 28%),
+        var(--white);
+    }
+
+    button { font: inherit; }
+
+    .page {
+      width: min(1120px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 30px 0 25px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .brand-mark {
+      display: grid;
+      width: 39px;
+      height: 39px;
+      place-items: center;
+      border: 1px solid #edf0e9;
+      border-radius: 13px;
+      background: #fff;
+      color: #d5ad52;
+      box-shadow: 0 3px 12px rgba(57, 80, 74, .05);
+    }
+
+    .brand-mark svg { width: 22px; height: 22px; }
+    .eyebrow { margin: 0 0 2px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .13em; }
+    h1 { margin: 0; font-family: Fraunces, Georgia, serif; font-size: 21px; font-weight: 500; }
+
+    .stats { display: flex; align-items: center; gap: 9px; }
+
+    .stat {
+      display: flex;
+      min-width: 96px;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.8);
+    }
+
+    .stat svg { width: 17px; height: 17px; flex: none; }
+    .stat-label { display: block; color: var(--muted); font-size: 9px; line-height: 1.2; }
+    .stat-value { display: block; margin-top: 1px; font-size: 14px; font-weight: 700; line-height: 1.2; }
+
+    .game-shell {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #e9eeea;
+      border-radius: 8px;
+      background: #eff9fb;
+      box-shadow: 0 16px 50px rgba(71, 115, 113, .09);
+    }
+
+    canvas { display: block; width: 100%; aspect-ratio: 1000 / 560; }
+
+    .launch-layer {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      gap: 10px;
+      padding: 24px;
+      background: linear-gradient(90deg, rgba(248,253,251,.14), rgba(255,255,255,.60), rgba(248,253,251,.14));
+      text-align: center;
+      transition: opacity .2s ease;
+    }
+
+    .launch-layer[hidden] { display: none; }
+
+    .launch-sparkle { width: 38px; height: 38px; color: #ddb758; }
+    .launch-layer h2 { margin: 0; font-family: Fraunces, Georgia, serif; font-size: clamp(25px, 4vw, 37px); font-weight: 500; }
+    .launch-layer p { margin: 0 0 8px; color: #647678; font-size: 14px; }
+
+    .launch-button {
+      display: inline-flex;
+      min-height: 45px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 19px;
+      border: 0;
+      border-radius: 7px;
+      background: #438ea4;
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(67, 142, 164, .2);
+      transition: background .15s ease, transform .15s ease;
+    }
+
+    .launch-button:hover { transform: translateY(-1px); background: #347e93; }
+    .launch-button:focus-visible, .flight-button:focus-visible { outline: 3px solid #e4bd60; outline-offset: 3px; }
+    .launch-button svg { width: 15px; height: 15px; }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 13px;
+    }
+
+    .hint { margin: 0; color: #778587; font-size: 12px; }
+    .hint kbd { padding: 3px 7px; border: 1px solid #e5eae6; border-radius: 5px; background: #fff; color: #526366; font: 600 11px "DM Sans", sans-serif; }
+
+    .flight-button {
+      display: none;
+      min-width: 108px;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border: 1px solid #dce9e5;
+      border-radius: 7px;
+      background: #fff;
+      color: #438ea4;
+      font-size: 12px;
+      font-weight: 700;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .flight-button svg { width: 17px; height: 17px; }
+    .flight-button:active { background: #edf7f6; }
+
+    .footnote { display: flex; justify-content: center; gap: 7px; margin: 20px 0 0; color: #97a19d; font-size: 11px; }
+    .footnote svg { width: 14px; height: 14px; color: #d9b457; }
+
+    @media (max-width: 620px) {
+      .page { width: min(100% - 28px, 520px); padding-top: 19px; }
+      .topbar { margin-bottom: 15px; }
+      .brand-mark { width: 35px; height: 35px; }
+      h1 { font-size: 19px; }
+      .eyebrow { font-size: 9px; }
+      .stats { gap: 6px; }
+      .stat { min-width: 0; gap: 6px; padding: 7px 8px; }
+      .stat svg { width: 15px; height: 15px; }
+      .stat-label { font-size: 8px; }
+      .stat-value { font-size: 12px; }
+      .controls { align-items: flex-start; }
+      .hint { max-width: 200px; padding-top: 3px; font-size: 11px; line-height: 1.6; }
+      .flight-button { display: inline-flex; flex: none; }
+      .footnote { margin-top: 15px; }
+    }
+
+    @media (max-width: 390px) {
+      .page { width: calc(100% - 20px); }
+      .brand { gap: 8px; }
+      .stats { gap: 4px; }
+      .stat { padding: 6px; }
+      .stat svg { display: none; }
+      .hint { max-width: 160px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.7 14.15 9l6.5.1-5.2 3.9 1.9 6.2L12 15.5l-5.35 3.7 1.9-6.2-5.2-3.9 6.5-.1L12 2.7Z" fill="currentColor"/><path d="m18.7 2 .48 1.34 1.4.02-1.12.84.4 1.34-1.16-.8-1.15.8.4-1.34-1.13-.84 1.4-.02L18.7 2Z" fill="#8fc8cf"/></svg>
+        </div>
+        <div><p class="eyebrow">UM JOGO DE CÉU E MAGIA</p><h1>Voo Encantado</h1></div>
+      </div>
+      <div class="stats" aria-label="Placar">
+        <div class="stat">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 2.8 2.72 5.51 6.08.88-4.4 4.29 1.04 6.05L12 16.68l-5.44 2.85 1.04-6.05-4.4-4.29 6.08-.88L12 2.8Z" fill="#e1b94f"/></svg>
+          <span><span class="stat-label">ESTRELAS</span><span class="stat-value" id="score">0</span></span>
+        </div>
+        <div class="stat">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20.2s-8-4.63-8-10.19a4.18 4.18 0 0 1 7.38-2.7L12 8.1l.62-.79A4.18 4.18 0 0 1 20 10.01c0 5.56-8 10.19-8 10.19Z" fill="#e8a9a0"/></svg>
+          <span><span class="stat-label">RECORDE</span><span class="stat-value" id="best">0</span></span>
+        </div>
+      </div>
+    </header>
+
+    <section class="game-shell" aria-label="Jogo Voo Encantado">
+      <canvas id="game" aria-label="Unicórnio voando entre nuvens e estrelas"></canvas>
+      <div class="launch-layer" id="launch-layer">
+        <svg class="launch-sparkle" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 2.5c1.8 9.1 4.4 11.7 13.5 13.5C24.4 17.8 21.8 20.4 20 29.5 18.2 20.4 15.6 17.8 6.5 16 15.6 14.2 18.2 11.6 20 2.5Z" fill="currentColor"/><path d="M32.4 25.7c.9 4.3 2.1 5.6 6.4 6.4-4.3.9-5.5 2.1-6.4 6.4-.8-4.3-2.1-5.5-6.4-6.4 4.3-.8 5.6-2.1 6.4-6.4Z" fill="#91cbd0"/></svg>
+        <h2 id="launch-title">Vamos voar?</h2>
+        <p id="launch-copy">Um céu inteiro esperando por você.</p>
+        <button class="launch-button" id="launch-button" type="button">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M7 4.8c0-.8.9-1.3 1.6-.9l7 5.1a1.2 1.2 0 0 1 0 2l-7 5.1c-.7.5-1.6 0-1.6-.9V4.8Z" fill="currentColor"/></svg>
+          Começar a voar
+        </button>
+      </div>
+    </section>
+
+    <div class="controls">
+      <p class="hint">Pressione <kbd>ESPAÇO</kbd> ou <kbd>↑</kbd> para bater as asas</p>
+      <button class="flight-button" id="flight-button" type="button" aria-label="Bater as asas">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Voar
+      </button>
+    </div>
+
+    <p class="footnote">
+      <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m8 1.5 1.48 4.2 4.33.07-3.46 2.6 1.27 4.14L8 10.03l-3.62 2.48 1.27-4.14-3.46-2.6 4.33-.07L8 1.5Z" fill="currentColor"/></svg>
+      Feito de sonhos, nuvens e um pouquinho de magia
+    </p>
+  </main>
+
+  <img id="unicorn-art" src="unicorn.svg" alt="" hidden>
+  <script>
+    (() => {
+      const canvas = document.querySelector("#game");
+      const context = canvas.getContext("2d");
+      const launchLayer = document.querySelector("#launch-layer");
+      const launchButton = document.querySelector("#launch-button");
+      const launchTitle = document.querySelector("#launch-title");
+      const launchCopy = document.querySelector("#launch-copy");
+      const scoreLabel = document.querySelector("#score");
+      const bestLabel = document.querySelector("#best");
+      const unicornArt = document.querySelector("#unicorn-art");
+      const flightButton = document.querySelector("#flight-button");
+      const width = 1000;
+      const height = 560;
+      const floor = 503;
+      const bestKey = "voo-encantado-recorde";
+      let best = Number(localStorage.getItem(bestKey)) || 0;
+      let score = 0;
+      let state = "ready";
+      let playerY = 264;
+      let velocity = 0;
+      let lastTime = 0;
+      let elapsed = 0;
+      let spawnTimer = 0;
+      let clouds = [];
+      let sparkles = [];
+      let stars = [];
+      let floatingClouds = [];
+      let raf = 0;
+      let soundContext;
+
+      bestLabel.textContent = String(best);
+
+      const seededClouds = [
+        { x: 83, y: 107, scale: .66, speed: 13, alpha: .66 },
+        { x: 420, y: 188, scale: .4, speed: 8, alpha: .44 },
+        { x: 760, y: 95, scale: .83, speed: 17, alpha: .58 },
+        { x: 1004, y: 231, scale: .48, speed: 11, alpha: .38 },
+        { x: 244, y: 374, scale: .58, speed: 7, alpha: .48 },
+        { x: 836, y: 414, scale: .72, speed: 12, alpha: .41 },
+      ];
+
+      const resize = () => {
+        const box = canvas.getBoundingClientRect();
+        const ratio = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(box.width * ratio);
+        canvas.height = Math.round(box.height * ratio);
+        context.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
+        render();
+      };
+
+      const cloud = (x, y, scale, color, alpha = 1) => {
+        context.save();
+        context.translate(x, y);
+        context.scale(scale, scale);
+        context.globalAlpha = alpha;
+        context.fillStyle = color;
+        context.beginPath();
+        context.ellipse(0, 8, 54, 20, 0, 0, Math.PI * 2);
+        context.arc(-30, 5, 17, Math.PI, Math.PI * 2);
+        context.arc(-13, -9, 25, Math.PI, Math.PI * 2);
+        context.arc(15, -17, 31, Math.PI, Math.PI * 2);
+        context.arc(41, -4, 21, Math.PI, Math.PI * 2);
+        context.closePath();
+        context.fill();
+        context.restore();
+      };
+
+      const star = (x, y, radius, rotation, color) => {
+        context.save();
+        context.translate(x, y);
+        context.rotate(rotation);
+        context.fillStyle = color;
+        context.beginPath();
+        for (let i = 0; i < 10; i++) {
+          const angle = -Math.PI / 2 + i * Math.PI / 5;
+          const size = i % 2 === 0 ? radius : radius * .24;
+          const px = Math.cos(angle) * size;
+          const py = Math.sin(angle) * size;
+          if (i === 0) context.moveTo(px, py);
+          else context.lineTo(px, py);
+        }
+        context.closePath();
+        context.fill();
+        context.restore();
+      };
+
+      const background = () => {
+        const sky = context.createLinearGradient(0, 0, 0, height);
+        sky.addColorStop(0, "#e8f8fa");
+        sky.addColorStop(.52, "#f4fcfa");
+        sky.addColorStop(1, "#fffaf0");
+        context.fillStyle = sky;
+        context.fillRect(0, 0, width, height);
+
+        const sunGlow = context.createRadialGradient(805, 124, 12, 805, 124, 116);
+        sunGlow.addColorStop(0, "rgba(255,255,255,.94)");
+        sunGlow.addColorStop(.48, "rgba(255,250,225,.5)");
+        sunGlow.addColorStop(1, "rgba(255,250,225,0)");
+        context.fillStyle = sunGlow;
+        context.fillRect(675, 0, 260, 250);
+
+        context.globalAlpha = .76;
+        context.fillStyle = "#fffefa";
+        context.beginPath();
+        context.moveTo(0, 427);
+        context.bezierCurveTo(176, 374, 287, 430, 453, 409);
+        context.bezierCurveTo(615, 388, 734, 415, 1000, 365);
+        context.lineTo(1000, height);
+        context.lineTo(0, height);
+        context.closePath();
+        context.fill();
+        context.globalAlpha = 1;
+
+        context.fillStyle = "rgba(255,255,255,.39)";
+        for (let i = 0; i < 8; i++) {
+          const x = ((i * 167 + elapsed * 13) % (width + 70)) - 30;
+          const y = 47 + (i * 79) % 360;
+          context.beginPath();
+          context.arc(x, y, 1.5 + (i % 3), 0, Math.PI * 2);
+          context.fill();
+        }
+      };
+
+      const drawSparkle = (item) => {
+        const pulse = .65 + Math.sin(elapsed * 2 + item.phase) * .28;
+        context.save();
+        context.globalAlpha = pulse;
+        star(item.x, item.y, item.size, elapsed * .12 + item.phase, item.color);
+        context.restore();
+      };
+
+      const drawObstacle = (item) => {
+        const cloudColor = "#dceef0";
+        cloud(item.x, item.gapTop - 20, 1.05, cloudColor);
+        cloud(item.x, item.gapBottom + 22, 1.05, cloudColor);
+        context.fillStyle = "rgba(216,235,235,.68)";
+        context.fillRect(item.x - 37, 0, 74, Math.max(0, item.gapTop - 33));
+        context.fillRect(item.x - 37, item.gapBottom + 34, 74, floor - item.gapBottom);
+        cloud(item.x - 12, item.gapTop - 17, .78, "#dceef0");
+        cloud(item.x + 13, item.gapBottom + 18, .82, "#dceef0");
+      };
+
+      const drawGround = () => {
+        context.fillStyle = "#f4edda";
+        context.fillRect(0, floor, width, height - floor);
+        context.fillStyle = "#d4e9d9";
+        context.beginPath();
+        context.moveTo(0, floor + 8);
+        context.bezierCurveTo(175, floor - 12, 310, floor + 17, 499, floor + 3);
+        context.bezierCurveTo(676, floor - 14, 830, floor + 14, width, floor - 5);
+        context.lineTo(width, height);
+        context.lineTo(0, height);
+        context.closePath();
+        context.fill();
+        for (let i = 0; i < 20; i++) {
+          const x = (i * 57 + 13) % width;
+          const y = 537 + (i % 2) * 8;
+          context.strokeStyle = i % 2 ? "#b4d6b6" : "#c7deb9";
+          context.lineWidth = 2;
+          context.beginPath();
+          context.moveTo(x, y + 8);
+          context.quadraticCurveTo(x - 4, y, x - 6, y - 2);
+          context.moveTo(x, y + 8);
+          context.quadraticCurveTo(x + 4, y, x + 6, y - 2);
+          context.stroke();
+        }
+      };
+
+      const drawPlayer = () => {
+        context.save();
+        context.translate(186, playerY);
+        context.rotate(Math.max(-.24, Math.min(.24, velocity / 1100)));
+        if (unicornArt.complete && unicornArt.naturalWidth) {
+          context.drawImage(unicornArt, -67, -52, 142, 111);
+        } else {
+          context.fillStyle = "#fff";
+          context.beginPath();
+          context.ellipse(0, 0, 38, 23, -.08, 0, Math.PI * 2);
+          context.fill();
+          context.fillStyle = "#e7c0d0";
+          context.beginPath();
+          context.arc(29, -18, 13, 0, Math.PI * 2);
+          context.fill();
+          context.fillStyle = "#dbb758";
+          context.beginPath();
+          context.moveTo(31, -29);
+          context.lineTo(38, -53);
+          context.lineTo(42, -25);
+          context.closePath();
+          context.fill();
+        }
+        context.restore();
+      };
+
+      const render = () => {
+        background();
+        for (const item of floatingClouds) cloud(item.x, item.y, item.scale, "#fff", item.alpha);
+        for (const item of sparkles) drawSparkle(item);
+        for (const item of clouds) drawObstacle(item);
+        for (const item of stars) {
+          context.save();
+          context.shadowColor = "rgba(229,190,83,.4)";
+          context.shadowBlur = 14;
+          star(item.x, item.y, 12, elapsed * .8, "#e8bd4f");
+          context.shadowBlur = 0;
+          star(item.x, item.y, 4, 0, "#fff8db");
+          context.restore();
+        }
+        drawGround();
+        drawPlayer();
+      };
+
+      const playChime = () => {
+        try {
+          soundContext ||= new AudioContext();
+          if (soundContext.state === "suspended") soundContext.resume();
+          const oscillator = soundContext.createOscillator();
+          const gain = soundContext.createGain();
+          oscillator.type = "sine";
+          oscillator.frequency.setValueAtTime(880, soundContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(1318, soundContext.currentTime + .1);
+          gain.gain.setValueAtTime(.12, soundContext.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.001, soundContext.currentTime + .2);
+          oscillator.connect(gain).connect(soundContext.destination);
+          oscillator.start();
+          oscillator.stop(soundContext.currentTime + .21);
+        } catch (_) { /* Audio is optional; flight works without it. */ }
+      };
+
+      const start = () => {
+        if (state === "running") return;
+        cancelAnimationFrame(raf);
+        state = "running";
+        score = 0;
+        elapsed = 0;
+        spawnTimer = .45;
+        playerY = 264;
+        velocity = -150;
+        clouds = [];
+        stars = [];
+        scoreLabel.textContent = "0";
+        launchLayer.hidden = true;
+        lastTime = performance.now();
+        raf = requestAnimationFrame(frame);
+      };
+
+      const flap = () => {
+        if (state !== "running") {
+          if (state === "ready" || state === "over") start();
+          return;
+        }
+        velocity = -410;
+      };
+
+      const addCloud = () => {
+        const gapSize = 191;
+        const gapTop = 106 + Math.random() * 176;
+        const gapBottom = gapTop + gapSize;
+        const x = width + 75;
+        clouds.push({ x, gapTop, gapBottom });
+        stars.push({ x, y: (gapTop + gapBottom) / 2, collected: false });
+      };
+
+      const circleRect = (cx, cy, radius, x, y, w, h) => {
+        const nearestX = Math.max(x, Math.min(cx, x + w));
+        const nearestY = Math.max(y, Math.min(cy, y + h));
+        return (cx - nearestX) ** 2 + (cy - nearestY) ** 2 < radius ** 2;
+      };
+
+      const finish = () => {
+        state = "over";
+        if (score > best) {
+          best = score;
+          localStorage.setItem(bestKey, String(best));
+          bestLabel.textContent = String(best);
+        }
+        launchTitle.textContent = score === best && score > 0 ? "Que voo lindo!" : "Até a próxima!";
+        launchCopy.textContent = `Você encontrou ${score} ${score === 1 ? "estrela" : "estrelas"}.`;
+        launchButton.innerHTML = '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.8a6.2 6.2 0 1 1-5.84 4.12M4.16 3.8v4.4h4.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Voar novamente';
+        launchLayer.hidden = false;
+        render();
+      };
+
+      const frame = (now) => {
+        if (state !== "running") return;
+        const delta = Math.min((now - lastTime) / 1000, .035);
+        lastTime = now;
+        elapsed += delta;
+        velocity += 940 * delta;
+        playerY += velocity * delta;
+        spawnTimer -= delta;
+
+        if (spawnTimer <= 0) {
+          addCloud();
+          spawnTimer = 2.25;
+        }
+
+        const speed = 226;
+        for (const item of clouds) {
+          item.x -= speed * delta;
+        }
+        clouds = clouds.filter((item) => item.x > -100);
+
+        for (const item of stars) item.x -= speed * delta;
+        stars = stars.filter((item) => item.x > -30);
+        for (let index = 0; index < clouds.length; index++) {
+          const item = clouds[index];
+          if (item.x < 229 && item.x > 144) {
+            const hitTop = circleRect(186, playerY, 25, item.x - 38, 0, 76, item.gapTop - 27);
+            const hitBottom = circleRect(186, playerY, 25, item.x - 38, item.gapBottom + 27, 76, floor - item.gapBottom);
+            if (hitTop || hitBottom) {
+              finish();
+              return;
+            }
+          }
+        }
+
+        for (const item of stars) {
+          if (!item.collected && Math.hypot(186 - item.x, playerY - item.y) < 34) {
+            item.collected = true;
+            score++;
+            scoreLabel.textContent = String(score);
+            playChime();
+          }
+        }
+        stars = stars.filter((item) => !item.collected);
+
+        if (playerY > floor - 20 || playerY < 20) {
+          finish();
+          return;
+        }
+
+        render();
+        raf = requestAnimationFrame(frame);
+      };
+
+      floatingClouds = seededClouds.map((item) => ({ ...item }));
+      const animateIdle = (now) => {
+        if (state !== "ready") return;
+        elapsed = now / 1000;
+        for (const item of floatingClouds) {
+          item.x -= item.speed / 60;
+          if (item.x < -100) item.x = width + 100;
+        }
+        playerY = 264 + Math.sin(elapsed * 1.5) * 9;
+        render();
+        requestAnimationFrame(animateIdle);
+      };
+
+      launchButton.addEventListener("click", start);
+      flightButton.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        flap();
+      });
+      window.addEventListener("keydown", (event) => {
+        if ((event.code === "Space" || event.code === "ArrowUp") && !event.repeat) {
+          event.preventDefault();
+          flap();
+        }
+      });
+      window.addEventListener("resize", resize);
+      unicornArt.addEventListener("load", render);
+      resize();
+      requestAnimationFrame(animateIdle);
+    })();
+  </script>
+</body>
+</html>
