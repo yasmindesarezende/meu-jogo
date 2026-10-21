@@ -326,7 +326,7 @@
       const floor = 503;
       const gatesToTerritory = 8;
       const bestKey = "voo-encantado-recorde";
-      let best = Number(localStorage.getItem(bestKey)) || 0;
+      let best = Math.max(100, Number(localStorage.getItem(bestKey)) || 0);
       let score = 0;
       let gatesPassed = 0;
       let state = "ready";
@@ -354,8 +354,6 @@
       const dialogueLines = [
         { speaker: "mother", text: "Vamos, família!" },
         { speaker: "father", text: "Estou com você!" },
-        { speaker: "grandmother", text: "Que chuva bonita!" },
-        { speaker: "grandfather", text: "Rumo ao castelo!" },
         { speaker: "mother", text: "Olha uma estrela!" },
         { speaker: "father", text: "Juntos até o fim!" },
       ];
@@ -1035,8 +1033,6 @@
         const speakers = {
           mother: { x: 186, y: playerY - 16 },
           father: { x: 296, y: playerY - 45 + Math.sin(elapsed * 2.8 + 1.2) * 5 },
-          grandfather: { x: 386, y: playerY - 50 + Math.sin(elapsed * 2.6 + 386) * 4 },
-          grandmother: { x: 444, y: playerY - 8 + Math.sin(elapsed * 2.6 + 444) * 4 },
         };
         const speaker = speakers[line.speaker];
         const bubbleWidth = 176;
@@ -1090,7 +1086,6 @@
         }
         drawGround();
         drawTerritory();
-        drawGrandparents();
         drawPartner();
         drawCompanion();
         drawPlayer();
@@ -1316,8 +1311,9 @@
       };
 
       const addCloud = () => {
-        const gapSize = 191;
-        const gapTop = 106 + Math.random() * 176;
+        const difficulty = Math.min(gatesPassed / gatesToTerritory, 1);
+        const gapSize = 175 - difficulty * 112;
+        const gapTop = 65 + Math.random() * (floor - gapSize - 125);
         const gapBottom = gapTop + gapSize;
         const x = width + 75;
         clouds.push({ x, gapTop, gapBottom, passed: false });
@@ -1384,10 +1380,10 @@
 
         if (spawnTimer <= 0) {
           addCloud();
-          spawnTimer = 2.25;
+          spawnTimer = Math.max(1.45, 2.25 - gatesPassed * .1);
         }
 
-        const speed = 226;
+        const speed = 226 + Math.min(gatesPassed / gatesToTerritory, 1) * 92;
         for (const item of floatingClouds) {
           item.x -= item.speed * delta;
           if (item.x < -100) item.x = width + 100;
